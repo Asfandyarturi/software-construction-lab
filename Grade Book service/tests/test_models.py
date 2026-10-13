@@ -1,23 +1,24 @@
 import pytest
-import models 
+from errors import ValidationError
+from models import parse_number
 
 
 @pytest.mark.parametrize(
-    "input_val",
+    ("raw", "expected"),
     [
-        pytest.param("15", id="str-int"),
-        pytest.param(15, id="raw-int"),
-        pytest.param("2.5", id="str-float"),
+        pytest.param("15", 15.0, id="numeric-string"),
+        pytest.param(15, 15.0, id="int"),
+        pytest.param("2.5", 2.5, id="decimal-string"),
     ],
 )
-def test_parse_number_valid(input_val: object) -> None:
-    assert models.parse_number(input_val) is not None
+def test_good_numbers_are_accepted(raw: object, expected: float) -> None:
+    assert parse_number(raw, "score") == expected
 
 
 @pytest.mark.parametrize(
-    "input_val",
+    "raw",
     [
-        pytest.param("abc", id="string"),
+        pytest.param("abc", id="text"),
         pytest.param(True, id="bool"),
         pytest.param(None, id="none"),
         pytest.param([], id="list"),
@@ -25,6 +26,6 @@ def test_parse_number_valid(input_val: object) -> None:
         pytest.param("inf", id="inf"),
     ],
 )
-def test_parse_number_invalid(input_val: object) -> None:
-    with pytest.raises((ValueError, TypeError)):
-        models.parse_number(input_val)
+def test_bad_numbers_are_rejected(raw: object) -> None:
+    with pytest.raises(ValidationError, match="score"):
+        parse_number(raw, "score")
