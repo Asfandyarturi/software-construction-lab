@@ -1,8 +1,3 @@
-import pytest
-from errors import ValidationError
-from models import parse_number
-
-
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
@@ -13,7 +8,6 @@ from models import parse_number
 )
 def test_good_numbers_are_accepted(raw: object, expected: float) -> None:
     assert parse_number(raw, "score") == expected
-
 
 @pytest.mark.parametrize(
     "raw",

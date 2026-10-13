@@ -1,15 +1,23 @@
+import pytest
 import gradebook
 
+@pytest.mark.parametrize(
+    ("scores", "expected"),
+    [
+        pytest.param({}, "0", id="no-marks"),
+        pytest.param({"A1": 15}, "7.5", id="quiz-15-of-20"),
+        pytest.param({"A1": 20}, "10.0", id="quiz-full-marks"),
+        pytest.param({"A1": 0}, "0.0", id="quiz-zero-score"),
+        pytest.param({"A1": 15, "A2": 40}, "31.5", id="two-assessments"),
+    ],
+)
+def test_percentage_for_scores(loaded, scores, expected):
+    for assessment, score in scores.items():
+        loaded["marks"].append({"student": "2430-0129", "assessment": assessment, "score": score})
+    result = gradebook.pct("2430-0129")
+    assert result == expected
 
-def test_student_with_no_marks_returns_zero(loaded: dict) -> None:
-    assert gradebook.pct("S1") == "0"
-
-
-def test_single_mark_calculates_correct_percentage(loaded: dict) -> None:
-    loaded["marks"].append({"student": "S1", "assessment": "A1", "score": 15})
-    assert gradebook.pct("S1") == "7.5"
-
-
-def test_mark_for_unknown_assessment_is_ignored(loaded: dict) -> None:
-    loaded["marks"].append({"student": "S1", "assessment": "GHOST", "score": 5})
-    assert gradebook.pct("S1") == "0"
+def test_mark_for_unknown_assessment_is_ignored(loaded):
+    loaded["marks"].append({"student": "2430-0129", "assessment": "GHOST", "score": 15})
+    result = gradebook.pct("2430-0129")
+    assert result == "0"
